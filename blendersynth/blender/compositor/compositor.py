@@ -75,7 +75,7 @@ class Compositor:
 		self.aovs = []  # List of AOVs (used to update before rendering)
 
 		# We set view transform to 'Raw' to avoid any gamma correction to all non-Image layers
-		bpy.context.scene.view_settings.view_transform = 'Raw'
+		bpy.context.scene.view_settings.view_transform = None
 
 		# Socket to be used as RGB input for anything. Defined separately in case of applying overlays (e.g. background colour)
 		self._rgb_socket = get_node_by_name(self.node_tree, 'Render Layers').outputs['Image']
