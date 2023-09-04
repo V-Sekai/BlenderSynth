@@ -55,8 +55,7 @@ def remove_ext(fname):
 class Compositor:
 	"""Compositor output - for handling file outputs, and managing Compositor node tree"""
 
-	def __init__(self, view_layer='ViewLayer', background_color:tuple=None,
-				 rgb_color_space:str='Filmic sRGB'):
+	def __init__(self, view_layer='ViewLayer', background_color:tuple=None):
 		"""
 		:param view_layer: Name of View Layer to render
 		:param background_color: If given, RGB[A] tuple in range [0-1], will overwrite World background with solid color (while retaining lighting effects).
@@ -74,12 +73,8 @@ class Compositor:
 		self.overlays = {}
 		self.aovs = []  # List of AOVs (used to update before rendering)
 
-		# We set view transform to 'Raw' to avoid any gamma correction to all non-Image layers
-		bpy.context.scene.view_settings.view_transform = None
-
 		# Socket to be used as RGB input for anything. Defined separately in case of applying overlays (e.g. background colour)
 		self._rgb_socket = get_node_by_name(self.node_tree, 'Render Layers').outputs['Image']
-		self._set_rgb_color_space(rgb_color_space)
 		if background_color is not None:
 			self._set_background_color(background_color)
 
@@ -379,17 +374,6 @@ class Compositor:
 
 		if not animation:
 			self.fix_namings()
-
-	def _set_rgb_color_space(self, color_space:str='Filmic sRGB'):
-		"""Color spaces are all handled manually within compositor (so that we keep
-		AOVs in raw space). So set the color space for RGB socket here."""
-
-		color_space_node = self.node_tree.nodes.new('CompositorNodeConvertColorSpace')
-		color_space_node.from_color_space = 'Linear'
-		color_space_node.to_color_space = color_space
-
-		self.node_tree.links.new(self._rgb_socket, color_space_node.inputs[0])
-		self._rgb_socket = color_space_node.outputs[0]
 
 	def _set_background_color(self, color:tuple=(0, 0, 0)):
 		"""Set a solid background color, instead of transparent.
